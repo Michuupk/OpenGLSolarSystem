@@ -9,11 +9,14 @@ from glfw.GLFW import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+N = 21
 
-radius = 3.0
+radius = 5.0
 center = [0.0, 0.0, 0.0]
 latitude = 0.0
 longitude = 0.0
+t = 0.0
+s = 0.0
 current_x = 0.0
 current_y = 0.0
 current_z = 0.0
@@ -41,21 +44,46 @@ def startup():
     update_viewport(None, 800, 800)
 
 
-def sphere():
-    global latitude, longitude, current_x, current_y, current_z, next_x, next_y, next_z
+def sphere(center):
+    global N, latitude, s, longitude, t, current_x, current_y, current_z, next_x, next_y, next_z
 
-    glBegin(GL_LINES)
-    for longitude in np.linspace(0, 2 * np.pi, 10):
-        for latitude in np.linspace(0, np.pi, 10):
+    sphere_points = np.zeros((N, N, 3))
+
+    for longitude in np.linspace(0, 2 * np.pi, N):
+        for latitude in np.linspace(0, np.pi, N):
             next_x = radius * math.cos(latitude) * math.sin(longitude) + center[0]
             next_y = radius * math.sin(latitude) * math.sin(longitude) + center[1]
             next_z = radius * math.cos(longitude) + center[2]
-            glColor3f(1.0, 0.0, 0.0)
-            glVertex3f(current_x, current_y, current_z)
-            glColor3f(0.0, 1.0, 0.0)
+            sphere_points[int(longitude), int(latitude)] = [next_x, next_y, next_z]
+            glColor3f(1.0, 1.0, 1.0)
             glVertex3f(next_x, next_y, next_z)
-        current_x = next_x
-        current_y = next_y
+            glColor3f(1.0, 1.0, 0.0)
+            glVertex3f(current_x, current_y, current_z)
+            current_x = next_x
+            current_y = next_y
+            current_z = next_z
+
+    glBegin(GL_TRIANGLES)
+    for i in range(1, N):
+        for j in range(1, N):
+            v1 = sphere_points[i - 1, j - 1]
+            v2 = sphere_points[i, j - 1]
+            v3 = sphere_points[i, j]
+            v4 = sphere_points[i - 1, j]
+
+            # Drugi trójkąt
+            glColor3f(1.0, 1.0, 1.0)  # white
+            glVertex3f(*v1)
+            glVertex3f(*v2)
+            glVertex3f(*v3)
+
+
+            glColor3f(1.0, 1.0, 0.0)
+            glVertex3f(*v1)
+            glVertex3f(*v3)
+            glVertex3f(*v4)
+        
+        
 
     glEnd()
 
@@ -97,7 +125,7 @@ def scroll_callback(window, xoffset, yoffset):
         cam_radius = 45
 
 def render(time):
-    global delta_x, delta_y, cam_radius, camera_position, upv
+    global delta_x, delta_y, cam_radius, camera_position, upv, center
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
@@ -126,7 +154,7 @@ def render(time):
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
     
-    sphere()
+    sphere(center)
 
     glFlush()
 
