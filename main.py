@@ -5,7 +5,7 @@ from PIL import Image
 from pathlib import Path
 
 from glfw.GLFW import *
-
+from Planet import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -24,6 +24,7 @@ next_x = 0.0
 next_y = 0.0
 next_z = 0.0
 
+p = Planet(radius)
 
 left_mouse_button_pressed = 0
 right_mouse_button_pressed = 0
@@ -87,6 +88,7 @@ def scroll_callback(window, xoffset, yoffset):
 def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    p.render()
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
         camera_position[1] = math.sin(delta_y)
@@ -113,8 +115,7 @@ def render(time):
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
-    axes()
-    sphere(radius)
+
 
     glFlush()
 
