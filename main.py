@@ -1,5 +1,7 @@
 import math
 import sys
+import time
+
 import numpy as np
 from PIL import Image
 from pathlib import Path
@@ -25,6 +27,7 @@ next_y = 0.0
 next_z = 0.0
 
 p = Planet(radius)
+angular_velocity = 10.0
 
 left_mouse_button_pressed = 0
 right_mouse_button_pressed = 0
@@ -36,6 +39,15 @@ delta_y = 0
 cam_radius = 0.0
 camera_position = [1.0, 0.0, 0.0]
 upv = [0.0, 1.0, 0.0]
+
+last_time = time.time()
+
+def calculate_delta_time():
+    global last_time
+    current_time = time.time()
+    delta_time = current_time - last_time  # Time difference between frames
+    last_time = current_time  # Update the last frame's time
+    return delta_time
 
 def shutdown():
     pass
@@ -108,7 +120,11 @@ def scroll_callback(window, xoffset, yoffset):
 
 def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
+    delta_time = calculate_delta_time()  # Compute time elapsed since the last frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    p.render()
+    p.rotate(angular_velocity, delta_time)
+
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
         camera_position[1] = math.sin(delta_y)
@@ -136,7 +152,6 @@ def render(time):
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
     axes()
-    p.render()
 
 
     glFlush()
@@ -187,6 +202,7 @@ def main():
     startup()
 
     while not glfwWindowShouldClose(window):
+
         render(glfwGetTime())
         glfwSwapBuffers(window)
         glfwPollEvents()

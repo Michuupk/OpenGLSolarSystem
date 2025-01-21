@@ -13,7 +13,7 @@ from OpenGL.GLU import *
 class Planet:
     radius = 20
     def __init__(self, radius):
-        self.angle = None
+        self.angle = 0
         self.radius = radius
 
     def calculate_normal(self, v1, v2, v3):
@@ -86,6 +86,6 @@ class Planet:
 
     def render(self):
         glPushMatrix()
-        glRotatef(self.angle, 0.0, 1.0, 0.0)  # Rotate around the Y-axis
+        glRotatef(self.angle, 0.0, 1.0, 0.0)
         self.generate_sphere()
         glPopMatrix()
