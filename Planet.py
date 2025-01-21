@@ -26,7 +26,7 @@ class Planet:
         return normal / norm
 
     def generate_sphere(self):
-        N = 20
+        N = 26
         center = [0.0, 0.0, 0.0]
 
         tab = np.zeros((N, N, 3))
@@ -38,19 +38,20 @@ class Planet:
         ut = np.linspace(0.0, 1.0, N)
         vt = np.linspace(0.0, 1.0, N)
 
-        for j, u in enumerate(ul):
-            for i, v in enumerate(vl):
+
+        for j, v in enumerate(vl):
+            for i, u in enumerate(ul):
                 theta = 2 * math.pi * u  # azimuthal angle
                 phi = math.pi * v  # polar angle
                 x = math.sin(phi) * math.cos(theta)
                 y = math.sin(phi) * math.sin(theta)
                 z = math.cos(phi)
                 tab[i, j] = [x, y, z]
-                texture[j, i] = [ut[i], vt[j]]
+                texture[j, i] = [ut[j], vt[i]]
 
         glFrontFace(GL_CW)
 
-        texture_image = Image.open('sample.tga')
+        texture_image = Image.open('2k_earth_daymap.jpg')
         glTexImage2D(
         GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
         GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)

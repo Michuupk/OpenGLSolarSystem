@@ -11,8 +11,6 @@ from glfw.GLFW import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-N = 17
-
 radius = 5.0
 center = [0.0, 0.0, 0.0]
 latitude = 0.0
@@ -63,6 +61,8 @@ def startup():
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT)
 
 def axes():
     glBegin(GL_LINES)
@@ -122,8 +122,6 @@ def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
     delta_time = calculate_delta_time()  # Compute time elapsed since the last frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    p.render()
-    p.rotate(angular_velocity, delta_time)
 
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
@@ -152,6 +150,8 @@ def render(time):
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
     axes()
+    p.render()
+    p.rotate(angular_velocity, delta_time)
 
 
     glFlush()
