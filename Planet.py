@@ -11,12 +11,12 @@ from OpenGL.GLU import *
 
 
 
-
-
 class Planet:
     radius = 20
     def __init__(self, radius):
+        self.angle = None
         self.radius = radius
+
 
     def compute_normals(self):
         self.normals = np.zeros((self.N, self.N, 3))  # Tablica na normalne
@@ -80,3 +80,13 @@ class Planet:
                 glTexCoord2f(*texture[i - 1, j])  # Współrzędne tekstury dla v4
                 glVertex3f(*v4)
         glEnd()
+
+    def rotate(self, angular_velocity, delta_time):
+        self.angle += angular_velocity * delta_time  # Update rotation angle
+        self.angle %= 360  # Keep the angle within the range [0, 360]
+
+    def render(self):
+        glPushMatrix()
+        glRotatef(self.angle, 0.0, 1.0, 0.0)  # Rotate around the Y-axis
+        self.generate_sphere()
+        glPopMatrix()
