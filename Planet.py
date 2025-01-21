@@ -49,6 +49,13 @@ class Planet:
                 texture[j, i] = [ut[i], vt[j]]
 
         glFrontFace(GL_CW)
+
+        texture_image = Image.open('sample.tga')
+        glTexImage2D(
+        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
+        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
+        )
+
         glBegin(GL_TRIANGLES)
         for j in range(1, N):
             for i in range(1, N):
