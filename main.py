@@ -46,40 +46,9 @@ def startup():
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
 
-    glEnable(GL_TEXTURE_2D)
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+def sphere(center):
+    global N, latitude, s, longitude, t, current_x, current_y, current_z, next_x, next_y, next_z
 
-def calculate_normal(v1, v2, v3):
-        u = np.subtract(v2, v1)
-        v = np.subtract(v3, v1)
-        normal = np.cross(u, v)
-        norm = np.linalg.norm(normal)
-        if norm == 0:
-            return normal
-        return normal / norm
-
-def axes():
-    glBegin(GL_LINES)
-
-    glColor3f(1.0, 0.0, 0.0) #red x-axis
-    glVertex3f(-50.0, 0.0, 0.0)
-    glVertex3f(50.0, 0.0, 0.0)
-
-    glColor3f(0.0, 1.0, 0.0) #green y-axis
-    glVertex3f(0.0, -50.0, 0.0)
-    glVertex3f(0.0, 50.0, 0.0)
-
-    glColor3f(0.0, 0.0, 1.0) #blue z-axis
-    glVertex3f(0.0, 0.0, -50.0)
-    glVertex3f(0.0, 0.0, 50.0)
-
-    glEnd()
-
-
-def sphere(radius):
-    global N
     tab = np.zeros((N, N, 3))
     texture = np.zeros((N, N, 2))
 
@@ -93,18 +62,13 @@ def sphere(radius):
         for i, v in enumerate(vl):
             theta = 2 * math.pi * u  # azimuthal angle
             phi = math.pi * v  # polar angle
-            x = radius * math.sin(phi) * math.cos(theta)
-            y = radius * math.sin(phi) * math.sin(theta)
-            z = radius * math.cos(phi)
+            x = math.sin(phi) * math.cos(theta)
+            y = math.sin(phi) * math.sin(theta)
+            z = math.cos(phi)
             tab[i, j] = [x, y, z]
             texture[j, i] = [ut[i], vt[j]]
 
     glFrontFace(GL_CW)
-    texture_image = Image.open('sample.tga')
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
-        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
-    )
     glBegin(GL_TRIANGLES)
     for j in range(1, N):
         for i in range(1, N):
@@ -113,11 +77,8 @@ def sphere(radius):
             v3 = tab[i, j]
             v4 = tab[i - 1, j]
 
-            normal1 = calculate_normal(v1, v2, v3)
-            normal2 = calculate_normal(v1, v3, v4)
-
             glColor3f(1.0, 1.0, 1.0)  # white
-            glNormal3f(*normal1)
+            #glNormal3f(*normal1)
             glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
             glVertex3f(*v1)
             glTexCoord2f(*texture[i, j - 1])  # Współrzędne tekstury dla v2
@@ -127,7 +88,7 @@ def sphere(radius):
 
             # Drugi trójkąt
             glColor3f(1.0, 1.0, 1.0)  # white
-            glNormal3f(*normal2)
+            #glNormal3f(*normal2)
             glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
             glVertex3f(*v1)
             glTexCoord2f(*texture[i, j])  # Współrzędne tekstury dla v3
