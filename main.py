@@ -5,9 +5,9 @@ import time
 import numpy as np
 from PIL import Image
 from pathlib import Path
+from Planet import *
 
 from glfw.GLFW import *
-from Planet import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -40,6 +40,15 @@ cam_radius = 0.0
 camera_position = [1.0, 0.0, 0.0]
 upv = [0.0, 1.0, 0.0]
 
+last_time = time.time()
+
+def calculate_delta_time():
+    global last_time
+    current_time = time.time()
+    delta_time = current_time - last_time  # Time difference between frames
+    last_time = current_time  # Update the last frame's time
+    return delta_time
+
 def shutdown():
     pass
 
@@ -50,14 +59,27 @@ def startup():
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
 
-last_time = time.time()
+    glEnable(GL_TEXTURE_2D)
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-def calculate_delta_time():
-    global last_time
-    current_time = time.time()
-    delta_time = current_time - last_time  # Time difference between frames
-    last_time = current_time  # Update the last frame's time
-    return delta_time
+def axes():
+    glBegin(GL_LINES)
+
+    glColor3f(1.0, 0.0, 0.0) #red x-axis
+    glVertex3f(-50.0, 0.0, 0.0)
+    glVertex3f(50.0, 0.0, 0.0)
+
+    glColor3f(0.0, 1.0, 0.0) #green y-axis
+    glVertex3f(0.0, -50.0, 0.0)
+    glVertex3f(0.0, 50.0, 0.0)
+
+    glColor3f(0.0, 0.0, 1.0) #blue z-axis
+    glVertex3f(0.0, 0.0, -50.0)
+    glVertex3f(0.0, 0.0, 50.0)
+
+    glEnd()
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -129,6 +151,7 @@ def render(time):
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
+    axes()
 
 
     glFlush()
