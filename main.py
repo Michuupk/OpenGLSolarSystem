@@ -41,20 +41,20 @@ sun = Planet(
     orbit_radius=0,  # Słońce w centrum
     orbit_speed=0,  # Słońce nieruchome
     orbit_angle=0,
-    texture_name="2k_sun.jpg",
+    texture_name="textures/2k_sun.jpg",
     scale_distance=SCALE_DISTANCE,
     scale_size=SCALE_SIZE
 )
 
 planets = [
-    # Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Merkury
-    # Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.0, 3.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Wenus
-    Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.0, 2.5, 0, "2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Ziemia
-    # Planet(sun_radius + 0.5, 0.5, 25.2, sun_radius + 15.0, 2.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Mars
-    # Planet(sun_radius + 2.0, 2.0, 3.1, sun_radius + 30.0, 1.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Jowisz
-    # Planet(sun_radius + 1.5, 1.5, 26.7, sun_radius + 50.0, 0.7, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Saturn
-    # Planet(sun_radius + 1.0, 1.0, 97.8, sun_radius + 70.0, 0.5, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Uran
-    # Planet(sun_radius + 1.0, 1.0, 28.3, sun_radius + 90.0, 0.3, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Neptun
+    # Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "textures/2k_mercury.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Merkury
+    # Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.0, 3.0, 0, "textures/2k_venus_surface", SCALE_DISTANCE, SCALE_SIZE),  # Wenus
+    Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.0, 2.5, 0, "textures/2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Ziemia
+    # Planet(sun_radius + 0.5, 0.5, 25.2, sun_radius + 15.0, 2.0, 0, "textures/2k_mars.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Mars
+    # Planet(sun_radius + 2.0, 2.0, 3.1, sun_radius + 30.0, 1.0, 0, "textures/2k_jupiter.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Jowisz
+    # Planet(sun_radius + 1.5, 1.5, 26.7, sun_radius + 50.0, 0.7, 0, "textures/2k_saturn.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Saturn
+    # Planet(sun_radius + 1.0, 1.0, 97.8, sun_radius + 70.0, 0.5, 0, "textures/2k_uranus.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Uran
+    # Planet(sun_radius + 1.0, 1.0, 28.3, sun_radius + 90.0, 0.3, 0, "textures/2k_neptune.jpg", SCALE_DISTANCE, SCALE_SIZE),  # Neptun
 ]
 
 angular_velocity = 10.0
