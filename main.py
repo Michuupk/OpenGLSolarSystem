@@ -1,5 +1,7 @@
 import math
 import sys
+import time
+
 import numpy as np
 from PIL import Image
 from pathlib import Path
@@ -25,6 +27,7 @@ next_y = 0.0
 next_z = 0.0
 
 p = Planet(radius)
+angular_velocity = 10.0
 
 left_mouse_button_pressed = 0
 right_mouse_button_pressed = 0
@@ -47,6 +50,14 @@ def startup():
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
 
+last_time = time.time()
+
+def calculate_delta_time():
+    global last_time
+    current_time = time.time()
+    delta_time = current_time - last_time  # Time difference between frames
+    last_time = current_time  # Update the last frame's time
+    return delta_time
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -87,8 +98,11 @@ def scroll_callback(window, xoffset, yoffset):
 
 def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
+    delta_time = calculate_delta_time()  # Compute time elapsed since the last frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     p.render()
+    p.rotate(angular_velocity, delta_time)
+
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
         camera_position[1] = math.sin(delta_y)
@@ -165,6 +179,7 @@ def main():
     startup()
 
     while not glfwWindowShouldClose(window):
+
         render(glfwGetTime())
         glfwSwapBuffers(window)
         glfwPollEvents()
