@@ -18,6 +18,17 @@ class Planet:
     def __init__(self, radius):
         self.radius = radius
 
+    def compute_normals(self):
+        self.normals = np.zeros((self.N, self.N, 3))  # Tablica na normalne
+        for i in range(self.N):
+            for j in range(self.N):
+                # Punkt na powierzchni jajka
+                x, y, z = self.tab[i, j]
+
+                # Normalizacja wektora normalnego (prosty wektor skierowany na zewnątrz)
+                length = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+                self.normals[i, j] = [x / length, y / length, z / length]
+
     def generate_sphere(self):
         N = 20
         center = [0.0, 0.0, 0.0]
