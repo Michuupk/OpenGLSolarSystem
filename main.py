@@ -9,7 +9,7 @@ from glfw.GLFW import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-N = 21
+N = 17
 
 radius = 5.0
 center = [0.0, 0.0, 0.0]
@@ -46,9 +46,40 @@ def startup():
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
 
-def sphere(center):
-    global N, latitude, s, longitude, t, current_x, current_y, current_z, next_x, next_y, next_z
+    glEnable(GL_TEXTURE_2D)
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
+def calculate_normal(v1, v2, v3):
+        u = np.subtract(v2, v1)
+        v = np.subtract(v3, v1)
+        normal = np.cross(u, v)
+        norm = np.linalg.norm(normal)
+        if norm == 0:
+            return normal
+        return normal / norm
+
+def axes():
+    glBegin(GL_LINES)
+
+    glColor3f(1.0, 0.0, 0.0) #red x-axis
+    glVertex3f(-50.0, 0.0, 0.0)
+    glVertex3f(50.0, 0.0, 0.0)
+
+    glColor3f(0.0, 1.0, 0.0) #green y-axis
+    glVertex3f(0.0, -50.0, 0.0)
+    glVertex3f(0.0, 50.0, 0.0)
+
+    glColor3f(0.0, 0.0, 1.0) #blue z-axis
+    glVertex3f(0.0, 0.0, -50.0)
+    glVertex3f(0.0, 0.0, 50.0)
+
+    glEnd()
+
+
+def sphere(radius):
+    global N
     tab = np.zeros((N, N, 3))
     texture = np.zeros((N, N, 2))
 
@@ -62,13 +93,18 @@ def sphere(center):
         for i, v in enumerate(vl):
             theta = 2 * math.pi * u  # azimuthal angle
             phi = math.pi * v  # polar angle
-            x = math.sin(phi) * math.cos(theta)
-            y = math.sin(phi) * math.sin(theta)
-            z = math.cos(phi)
+            x = radius * math.sin(phi) * math.cos(theta)
+            y = radius * math.sin(phi) * math.sin(theta)
+            z = radius * math.cos(phi)
             tab[i, j] = [x, y, z]
             texture[j, i] = [ut[i], vt[j]]
 
     glFrontFace(GL_CW)
+    texture_image = Image.open('sample.tga')
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
+        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
+    )
     glBegin(GL_TRIANGLES)
     for j in range(1, N):
         for i in range(1, N):
@@ -77,8 +113,11 @@ def sphere(center):
             v3 = tab[i, j]
             v4 = tab[i - 1, j]
 
+            normal1 = calculate_normal(v1, v2, v3)
+            normal2 = calculate_normal(v1, v3, v4)
+
             glColor3f(1.0, 1.0, 1.0)  # white
-            #glNormal3f(*normal1)
+            glNormal3f(*normal1)
             glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
             glVertex3f(*v1)
             glTexCoord2f(*texture[i, j - 1])  # Współrzędne tekstury dla v2
@@ -88,7 +127,7 @@ def sphere(center):
 
             # Drugi trójkąt
             glColor3f(1.0, 1.0, 1.0)  # white
-            #glNormal3f(*normal2)
+            glNormal3f(*normal2)
             glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
             glVertex3f(*v1)
             glTexCoord2f(*texture[i, j])  # Współrzędne tekstury dla v3
@@ -136,7 +175,7 @@ def scroll_callback(window, xoffset, yoffset):
         cam_radius = 45
 
 def render(time):
-    global delta_x, delta_y, cam_radius, camera_position, upv, center
+    global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
@@ -164,8 +203,8 @@ def render(time):
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
-    
-    sphere(center)
+    axes()
+    sphere(radius)
 
     glFlush()
 
