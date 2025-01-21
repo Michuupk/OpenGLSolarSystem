@@ -3,9 +3,9 @@ import sys
 import numpy as np
 from PIL import Image
 from pathlib import Path
+from Planet import *
 
 from glfw.GLFW import *
-from Planet import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -47,6 +47,27 @@ def startup():
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
 
+    glEnable(GL_TEXTURE_2D)
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+def axes():
+    glBegin(GL_LINES)
+
+    glColor3f(1.0, 0.0, 0.0) #red x-axis
+    glVertex3f(-50.0, 0.0, 0.0)
+    glVertex3f(50.0, 0.0, 0.0)
+
+    glColor3f(0.0, 1.0, 0.0) #green y-axis
+    glVertex3f(0.0, -50.0, 0.0)
+    glVertex3f(0.0, 50.0, 0.0)
+
+    glColor3f(0.0, 0.0, 1.0) #blue z-axis
+    glVertex3f(0.0, 0.0, -50.0)
+    glVertex3f(0.0, 0.0, 50.0)
+
+    glEnd()
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -88,7 +109,6 @@ def scroll_callback(window, xoffset, yoffset):
 def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    p.render()
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
         camera_position[1] = math.sin(delta_y)
@@ -115,6 +135,8 @@ def render(time):
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
+    axes()
+    p.render()
 
 
     glFlush()

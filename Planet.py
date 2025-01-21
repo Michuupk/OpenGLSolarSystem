@@ -16,16 +16,14 @@ class Planet:
         self.angle = None
         self.radius = radius
 
-    def compute_normals(self):
-        self.normals = np.zeros((self.N, self.N, 3))  # Tablica na normalne
-        for i in range(self.N):
-            for j in range(self.N):
-                # Punkt na powierzchni jajka
-                x, y, z = self.tab[i, j]
-
-                # Normalizacja wektora normalnego (prosty wektor skierowany na zewnątrz)
-                length = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-                self.normals[i, j] = [x / length, y / length, z / length]
+    def calculate_normal(self, v1, v2, v3):
+        u = np.subtract(v2, v1)
+        v = np.subtract(v3, v1)
+        normal = np.cross(u, v)
+        norm = np.linalg.norm(normal)
+        if norm == 0:
+            return normal
+        return normal / norm
 
     def generate_sphere(self):
         N = 20
@@ -59,8 +57,11 @@ class Planet:
                 v3 = tab[i, j]
                 v4 = tab[i - 1, j]
 
+                normal1 = self.calculate_normal(v1, v2, v3)
+                normal2 = self.calculate_normal(v1, v3, v4)
+
                 glColor3f(1.0, 1.0, 1.0)  # white
-                # glNormal3f(*normal1)
+                glNormal3f(*normal1)
                 glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
                 glVertex3f(*v1)
                 glTexCoord2f(*texture[i, j - 1])  # Współrzędne tekstury dla v2
@@ -70,7 +71,7 @@ class Planet:
 
                 # Drugi trójkąt
                 glColor3f(1.0, 1.0, 1.0)  # white
-                # glNormal3f(*normal2)
+                glNormal3f(*normal2)
                 glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
                 glVertex3f(*v1)
                 glTexCoord2f(*texture[i, j])  # Współrzędne tekstury dla v3
