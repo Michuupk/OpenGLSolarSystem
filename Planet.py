@@ -11,10 +11,15 @@ from OpenGL.GLU import *
 
 
 class Planet:
-    radius = 20
-    def __init__(self, radius):
+    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size):
         self.angle = 0
-        self.radius = radius
+        self.size = size * scale_size  # Skalowany rozmiar planety
+        self.radius = radius * scale_size  # Skalowany promień planety
+        self.tilt_angle = tilt_angle
+        self.orbit_radius = orbit_radius * scale_distance  # Skalowana odległość orbitalna
+        self.orbit_angle = orbit_angle
+        self.orbit_speed = orbit_speed
+        self.texture_name = texture_name
 
     def calculate_normal(self, v1, v2, v3):
         u = np.subtract(v2, v1)
@@ -41,20 +46,20 @@ class Planet:
 
         for j, v in enumerate(vl):
             for i, u in enumerate(ul):
-                theta = 2 * math.pi * u  # azimuthal angle
-                phi = math.pi * v  # polar angle
-                x = math.sin(phi) * math.cos(theta)
-                y = math.sin(phi) * math.sin(theta)
-                z = math.cos(phi)
+                theta = 2 * math.pi * u  # Azimuthal angle
+                phi = math.pi * v  # Polar angle
+                x = self.size * math.sin(phi) * math.cos(theta)
+                y = self.size * math.sin(phi) * math.sin(theta)
+                z = self.size * math.cos(phi)
                 tab[i, j] = [x, y, z]
                 texture[j, i] = [ut[j], vt[i]]
 
         glFrontFace(GL_CW)
 
-        texture_image = Image.open('2k_earth_daymap.jpg')
+        texture_image = Image.open(self.texture_name)
         glTexImage2D(
-        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
-        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
+            GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
+            GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
         )
 
         glBegin(GL_TRIANGLES)
@@ -68,32 +73,43 @@ class Planet:
                 normal1 = self.calculate_normal(v1, v2, v3)
                 normal2 = self.calculate_normal(v1, v3, v4)
 
-                glColor3f(1.0, 1.0, 1.0)  # white
+                glColor3f(1.0, 1.0, 1.0)  # White
                 glNormal3f(*normal1)
-                glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
+                glTexCoord2f(*texture[i - 1, j - 1])  # Texture coordinates for v1
                 glVertex3f(*v1)
-                glTexCoord2f(*texture[i, j - 1])  # Współrzędne tekstury dla v2
+                glTexCoord2f(*texture[i, j - 1])  # Texture coordinates for v2
                 glVertex3f(*v2)
-                glTexCoord2f(*texture[i, j])  # Współrzędne tekstury dla v3
+                glTexCoord2f(*texture[i, j])  # Texture coordinates for v3
                 glVertex3f(*v3)
 
-                # Drugi trójkąt
-                glColor3f(1.0, 1.0, 1.0)  # white
+                # Second triangle
+                glColor3f(1.0, 1.0, 1.0)  # White
                 glNormal3f(*normal2)
-                glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
+                glTexCoord2f(*texture[i - 1, j - 1])  # Texture coordinates for v1
                 glVertex3f(*v1)
-                glTexCoord2f(*texture[i, j])  # Współrzędne tekstury dla v3
+                glTexCoord2f(*texture[i, j])  # Texture coordinates for v3
                 glVertex3f(*v3)
-                glTexCoord2f(*texture[i - 1, j])  # Współrzędne tekstury dla v4
+                glTexCoord2f(*texture[i - 1, j])  # Texture coordinates for v4
                 glVertex3f(*v4)
         glEnd()
 
     def rotate(self, angular_velocity, delta_time):
-        self.angle += angular_velocity * delta_time  # Update rotation angle
-        self.angle %= 360  # Keep the angle within the range [0, 360]
+        self.angle += angular_velocity * delta_time
+        self.angle %= 360
+
+    def update_orbit(self, delta_time):
+        self.orbit_angle += self.orbit_speed * delta_time
+        self.orbit_angle %= 360
 
     def render(self):
         glPushMatrix()
+
+        x = self.orbit_radius * math.cos(math.radians(self.orbit_angle))
+        z = self.orbit_radius * math.sin(math.radians(self.orbit_angle))
+
+        glTranslatef(x, 0.0, z)
+        glRotatef(self.tilt_angle, 1.0, 0.0, 0.0)
         glRotatef(self.angle, 0.0, 1.0, 0.0)
+
         self.generate_sphere()
         glPopMatrix()

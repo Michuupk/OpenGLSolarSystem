@@ -11,6 +11,11 @@ from glfw.GLFW import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+N = 17
+
+
+# Skalowany promień Słońca
+
 radius = 5.0
 center = [0.0, 0.0, 0.0]
 latitude = 0.0
@@ -24,7 +29,34 @@ next_x = 0.0
 next_y = 0.0
 next_z = 0.0
 
-p = Planet(radius)
+SCALE_SIZE = 1.0  # Bazowy rozmiar Ziemi
+SCALE_DISTANCE = 1.0  # Bazowa odległość Ziemi
+sun_radius = 8.0
+
+# Słońce
+sun = Planet(
+    radius=sun_radius,  # Słońce około 8 razy większe od Ziemi
+    size=8.0,  # Rozmiar Słońca
+    tilt_angle=0,  # Brak nachylenia
+    orbit_radius=0,  # Słońce w centrum
+    orbit_speed=0,  # Słońce nieruchome
+    orbit_angle=0,
+    texture_name="sample.tga",
+    scale_distance=SCALE_DISTANCE,
+    scale_size=SCALE_SIZE
+)
+
+planets = [
+    Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Merkury
+    Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.0, 3.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Wenus
+    Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.0, 2.5, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Ziemia
+    Planet(sun_radius + 0.5, 0.5, 25.2, sun_radius + 15.0, 2.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Mars
+    Planet(sun_radius + 2.0, 2.0, 3.1, sun_radius + 30.0, 1.0, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Jowisz
+    Planet(sun_radius + 1.5, 1.5, 26.7, sun_radius + 50.0, 0.7, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Saturn
+    Planet(sun_radius + 1.0, 1.0, 97.8, sun_radius + 70.0, 0.5, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Uran
+    Planet(sun_radius + 1.0, 1.0, 28.3, sun_radius + 90.0, 0.3, 0, "sample.tga", SCALE_DISTANCE, SCALE_SIZE),  # Neptun
+]
+
 angular_velocity = 10.0
 
 left_mouse_button_pressed = 0
@@ -52,7 +84,7 @@ def shutdown():
 
 def startup():
     glClearColor(0.0, 0.0, 0.0, 1.0)
-    update_viewport(None, 800, 800)
+    update_viewport(None, 1000, 1000)
 
     glEnable(GL_DEPTH_TEST)
     glShadeModel(GL_SMOOTH)
@@ -123,6 +155,7 @@ def render(time):
     delta_time = calculate_delta_time()  # Compute time elapsed since the last frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
         camera_position[1] = math.sin(delta_y)
@@ -150,32 +183,28 @@ def render(time):
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
     
     axes()
-    p.render()
-    p.rotate(angular_velocity, delta_time)
+
+    sun.render()
+
+    for planet in planets:
+        planet.update_orbit(delta_time)
+        planet.rotate(angular_velocity, delta_time)
+        planet.render()
 
 
     glFlush()
 
 def update_viewport(window, width, height):
-    global pix2angle
-    pix2angle = 360.0 / width
-    
-    if height == 0:
-        height = 1
-    if width == 0:
-        width = 1
-    aspectRatio = width / height
-    
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    
-    gluPerspective(90, 1.0, 0.1, 100.0)
-    glViewport(0, 0, width, height)
+
+    gluPerspective(70, 1.0, 0.1, 300.0)
 
     if width <= height:
-        glOrtho(-10, 10, -10 / aspectRatio, 10 / aspectRatio, 10, -10)
+        glViewport(0, int((height - width) / 2), width, width)
     else:
-        glOrtho(-10 * aspectRatio, 10 * aspectRatio, -10, 10, 10, -10)
+        glViewport(int((width - height) / 2), 0, height, height)
+
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
