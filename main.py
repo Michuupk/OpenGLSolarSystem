@@ -57,7 +57,7 @@ last_time = time.time()
 def calculate_delta_time():
     global last_time
     current_time = time.time()
-    delta_time = current_time - last_time  # Time difference between frames
+    delta_time = current_time - last_time
     last_time = current_time  # Update the last frame's time
     return delta_time
 
@@ -168,7 +168,7 @@ def render(time):
 
     for planet in planets:
         planet.update_orbit(delta_time)
-        planet.rotate(angular_velocity, delta_time)
+        planet.rotate(delta_time)
         planet.draw_orbit()
         planet.render()
 
@@ -212,15 +212,15 @@ def main():
 
 
     planets = [
-        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE),
-        Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "textures/2k_mercury.jpg", SCALE_DISTANCE, SCALE_SIZE, eccentricity=0.205),  # Merkury
-        Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.5, 3.0, 0, "textures/2k_venus_surface.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.007),  # Wenus
-        Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.3, 2.5, 0, "textures/2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.017),  # Ziemia
-        Planet(sun_radius + 0.5, 0.5, 25.2, sun_radius + 15.0, 2.0, 0, "textures/2k_mars.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.093),  # Mars
-        Planet(sun_radius + 2.0, 2.0, 3.1, sun_radius + 30.0, 1.0, 0, "textures/2k_jupiter.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.049),  # Jowisz
-        Planet(sun_radius + 1.5, 1.5, 26.7, sun_radius + 50.0, 0.7, 0, "textures/2k_saturn.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.056),  # Saturn
-        Planet(sun_radius + 1.0, 1.0, 97.8, sun_radius + 70.0, 0.5, 0, "textures/2k_uranus.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.046),  # Uran
-        Planet(sun_radius + 1.0, 1.0, 28.3, sun_radius + 90.0, 0.3, 0, "textures/2k_neptune.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.010),  # Neptun
+        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1),
+        # Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "textures/2k_mercury.jpg", SCALE_DISTANCE, SCALE_SIZE, eccentricity=0.205),  # Merkury
+        Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.5, 3.0, 0, "textures/2k_venus_surface.jpg", SCALE_DISTANCE, SCALE_SIZE,0.007,243,224.7),  # Wenus
+        Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.3, 2.5, 0, "textures/2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE,0.017,1,365.25),  # Ziemia
+        # Planet(sun_radius + 0.5, 0.5, 25.2, sun_radius + 15.0, 2.0, 0, "textures/2k_mars.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.093),  # Mars
+        # Planet(sun_radius + 2.0, 2.0, 3.1, sun_radius + 30.0, 1.0, 0, "textures/2k_jupiter.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.049),  # Jowisz
+        # Planet(sun_radius + 1.5, 1.5, 26.7, sun_radius + 50.0, 0.7, 0, "textures/2k_saturn.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.056),  # Saturn
+        # Planet(sun_radius + 1.0, 1.0, 97.8, sun_radius + 70.0, 0.5, 0, "textures/2k_uranus.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.046),  # Uran
+        # Planet(sun_radius + 1.0, 1.0, 28.3, sun_radius + 90.0, 0.3, 0, "textures/2k_neptune.jpg", SCALE_DISTANCE, SCALE_SIZE,eccentricity=0.010),  # Neptun
     ]
 
     startup()

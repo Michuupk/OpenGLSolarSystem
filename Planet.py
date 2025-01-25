@@ -16,7 +16,7 @@ class Planet:
     tab = np.array([])
     texture = np.zeros((N, N, 2))
 
-    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity=0.0):
+    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity ,day_length ,year_length):
         self.angle = 0
         self.size = size * scale_size
         self.radius = radius * scale_size
@@ -27,6 +27,8 @@ class Planet:
         self.eccentricity = eccentricity  # Ekscentryczność (e)
         self.texture_name = texture_name
         self.texture_id = self.load_texture(texture_name)
+        self.day_length = day_length  # Czas obrotu planety wokół osi (dni)
+        self.year_length = year_length  # Czas obiegu planety wokół Słońca (dni)
 
     def draw_orbit(self):
         a = self.orbit_radius  # Wielka półoś
@@ -74,13 +76,66 @@ class Planet:
             print(f"Error loading texture {texture_name}: {e}")
             return None
 
-    def rotate(self, angular_velocity, delta_time):
-        self.angle += angular_velocity * delta_time
-        self.angle %= 360
+    def rotate(self, delta_time):
+        rotations_per_year = self.year_length / self.day_length
+
+        # Prędkość obrotowa planety
+        angular_velocity = rotations_per_year * 360.0  # Stopnie na rok
+
+
+        self.angle += angular_velocity * delta_time / self.year_length
+        self.angle %= 360  # Ogranicz kąt do zakresu [0, 360]
 
     def update_orbit(self, delta_time):
-        self.orbit_angle += self.orbit_speed * delta_time
-        self.orbit_angle %= 360
+        if self.orbit_radius == 0:  # Jeśli planeta nie ma orbity (np. Słońce)
+            return
+
+        velocity = self.calculate_velocity()  # Prędkość orbitalna w km/s
+        r = self.get_current_distance()  # AU -> metry
+
+        if r == 0 or velocity == 0:  # Unikaj dzielenia przez 0
+            print(f"Skipping update_orbit for {self.texture_name} due to zero r or velocity")
+            return
+
+        # Uwzględnij skalowanie prędkości orbitalnej
+
+
+        angular_velocity = velocity * 1000 / r  # radian/s
+        self.orbit_angle += math.degrees(angular_velocity * delta_time)  # Dodaj zmianę kąta
+        self.orbit_angle %= 360  # Zawijanie kąta w przedziale [0, 360]
+
+
+
+    def calculate_velocity(self):
+        G = 6.67430e-11  # Stała grawitacyjna w jednostkach SI
+        M_sun = 1.989e30  # Masa Słońca [kg]
+        scale_mass = 0.000002  # Współczynnik skalowania masy Słońca
+
+
+        # Zastosowanie współczynnika skalowania
+        M_scaled = M_sun * scale_mass
+
+        # Aktualna odległość od Słońca (r) w metrach
+        r = self.get_current_distance() * 1.496e11  # AU -> metry
+
+        if r == 0:  # Jeśli odległość jest zerowa, np. dla Słońca
+            return 0
+
+        # Prędkość w m/s
+        v = (G * M_scaled / r) ** 0.5
+
+        # Prędkość w km/s
+        return v / 1000
+
+    def get_current_distance(self):
+        a = self.orbit_radius
+        e = self.eccentricity
+        theta = math.radians(self.orbit_angle)
+
+        r = a * (1 - e ** 2) / (1 + e * math.cos(theta))
+
+        print(f"get_current_distance: a={a:.2f}, e={e:.2f}, theta={math.degrees(theta):.2f}, r={r:.2f}")
+        return r
 
     def render(self):
         glPushMatrix()
@@ -89,9 +144,9 @@ class Planet:
             # Oblicz pozycję na elipsie
             theta = math.radians(self.orbit_angle)
             a = self.orbit_radius
-            b = a * math.sqrt(1 - self.eccentricity ** 2)  # Mała półoś
-            c = a * self.eccentricity  # Odległość środka elipsy od ogniska
-            x = a * math.cos(theta) - c  # Przesunięcie względem ogniska
+            b = a * math.sqrt(1 - self.eccentricity ** 2)
+            c = a * self.eccentricity
+            x = a * math.cos(theta) - c
             z = b * math.sin(theta)
 
             glTranslatef(x, 0.0, z)
@@ -113,6 +168,10 @@ class Planet:
             gluQuadricTexture(quadric, GL_TRUE)
             gluSphere(quadric, 1.0, self.N, self.N)
             gluDeleteQuadric(quadric)
+
+            # Debugowanie prędkości
+            velocity = self.calculate_velocity()
+            print(f"Prędkość planety ({self.texture_name}): {velocity:.2f} km/s")
 
         except Exception as e:
             print(f"Error during rendering: {e}")
