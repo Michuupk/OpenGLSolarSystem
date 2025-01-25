@@ -16,7 +16,7 @@ class Planet:
     tab = np.array([])
     texture = np.zeros((N, N, 2))
 
-    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity ,day_length ,year_length):
+    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity ,day_length ,year_length, scale_global):
         self.angle = 0
         self.size = size * scale_size
         self.radius = radius * scale_size
@@ -29,6 +29,7 @@ class Planet:
         self.texture_id = self.load_texture(texture_name)
         self.day_length = day_length  # Czas obrotu planety wokół osi (dni)
         self.year_length = year_length  # Czas obiegu planety wokół Słońca (dni)
+        self.scale_global = scale_global  # Globalny współczynnik skalowania
 
     def draw_orbit(self):
         a = self.orbit_radius  # Wielka półoś
@@ -77,55 +78,60 @@ class Planet:
             return None
 
     def rotate(self, delta_time):
-        rotations_per_year = self.year_length / self.day_length
+        if self.day_length == 0:  # Unikaj dzielenia przez 0 (np. dla Słońca)
+            return
 
-        # Prędkość obrotowa planety
-        angular_velocity = rotations_per_year * 360.0  # Stopnie na rok
+        # Prędkość obrotu planety (liczba obrotów na dzień symulacyjny)
+        rotations_per_day = 1 / self.day_length
+        angular_velocity = rotations_per_day * 360.0  # Stopnie na dzień
 
+        # Uwzględnij globalne skalowanie czasu
+        angular_velocity *= self.scale_global
 
-        self.angle += angular_velocity * delta_time / self.year_length
-        self.angle %= 360  # Ogranicz kąt do zakresu [0, 360]
+        # Przeliczenie delta_time na dni
+        delta_time_days = delta_time / 86400  # Sekundy na dni
+        self.angle += angular_velocity * delta_time_days
+        self.angle %= 360
+
+        print(
+            f"rotate: angle={self.angle:.2f}, angular_velocity={angular_velocity:.6f}, delta_time_days={delta_time_days:.6f}")
 
     def update_orbit(self, delta_time):
-        if self.orbit_radius == 0:  # Jeśli planeta nie ma orbity (np. Słońce)
+        if self.orbit_radius == 0:  # Jeśli to Słońce, nie wykonuj obliczeń
             return
 
-        velocity = self.calculate_velocity()  # Prędkość orbitalna w km/s
-        r = self.get_current_distance()  # AU -> metry
+        # Średnia prędkość orbitalna w jednostkach symulacyjnych (np. AU/dzień)
+        velocity = self.calculate_velocity()
 
-        if r == 0 or velocity == 0:  # Unikaj dzielenia przez 0
-            print(f"Skipping update_orbit for {self.texture_name} due to zero r or velocity")
+        if velocity == 0:
             return
 
-        # Uwzględnij skalowanie prędkości orbitalnej
+        # Przeliczenie delta_time na dni, uwzględniając scale_global
+        delta_time_days = (delta_time / 86400) * self.scale_global
 
+        orbit_circumference = 2 * math.pi * self.orbit_radius
+        angular_change = (velocity / orbit_circumference) * 360  # W stopniach
 
-        angular_velocity = velocity * 1000 / r  # radian/s
-        self.orbit_angle += math.degrees(angular_velocity * delta_time)  # Dodaj zmianę kąta
-        self.orbit_angle %= 360  # Zawijanie kąta w przedziale [0, 360]
+        self.orbit_angle += angular_change * delta_time_days
+        self.orbit_angle %= 360  # Zawijanie kąta w zakresie [0, 360]
 
-
+        print(
+            f"update_orbit: orbit_angle={self.orbit_angle:.2f}, angular_change={angular_change:.6f}, delta_time_days={delta_time_days:.6f}")
 
     def calculate_velocity(self):
-        G = 6.67430e-11  # Stała grawitacyjna w jednostkach SI
-        M_sun = 1.989e30  # Masa Słońca [kg]
-        scale_mass = 0.000002  # Współczynnik skalowania masy Słońca
+        # Wielka i mała półoś
+        a = self.orbit_radius  # Wielka półoś (skalowana)
+        b = a * math.sqrt(1 - self.eccentricity ** 2)  # Mała półoś
 
+        # Przybliżona długość orbity
+        orbit_length = 2 * math.pi * math.sqrt((a ** 2 + b ** 2) / 2)
+        print("orbit: ",orbit_length)
 
-        # Zastosowanie współczynnika skalowania
-        M_scaled = M_sun * scale_mass
+        # Średnia prędkość orbitalna (długość orbity / czas obiegu w dniach)
+        # Prędkość zwrócona jest w jednostkach symulacyjnych na dzień
+        average_velocity = orbit_length / self.year_length
 
-        # Aktualna odległość od Słońca (r) w metrach
-        r = self.get_current_distance() * 1.496e11  # AU -> metry
-
-        if r == 0:  # Jeśli odległość jest zerowa, np. dla Słońca
-            return 0
-
-        # Prędkość w m/s
-        v = (G * M_scaled / r) ** 0.5
-
-        # Prędkość w km/s
-        return v / 1000
+        return average_velocity
 
     def get_current_distance(self):
         a = self.orbit_radius
@@ -134,7 +140,6 @@ class Planet:
 
         r = a * (1 - e ** 2) / (1 + e * math.cos(theta))
 
-        print(f"get_current_distance: a={a:.2f}, e={e:.2f}, theta={math.degrees(theta):.2f}, r={r:.2f}")
         return r
 
     def render(self):
