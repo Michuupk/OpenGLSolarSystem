@@ -95,8 +95,8 @@ class Planet:
         self.angle += angular_velocity * delta_time_days
         self.angle %= 360
 
-        print(
-            f"rotate: angle={self.angle:.2f}, angular_velocity={angular_velocity:.6f}, delta_time_days={delta_time_days:.6f}")
+        #print(
+         #   f"rotate: angle={self.angle:.2f}, angular_velocity={angular_velocity:.6f}, delta_time_days={delta_time_days:.6f}")
 
     def update_orbit(self, delta_time):
         if self.orbit_radius == 0:  # Jeśli to Słońce, nie wykonuj obliczeń
@@ -117,8 +117,8 @@ class Planet:
         self.orbit_angle += angular_change * delta_time_days
         self.orbit_angle %= 360  # Zawijanie kąta w zakresie [0, 360]
 
-        print(
-            f"update_orbit: orbit_angle={self.orbit_angle:.2f}, angular_change={angular_change:.6f}, delta_time_days={delta_time_days:.6f}")
+        #print(
+#            f"update_orbit: orbit_angle={self.orbit_angle:.2f}, angular_change={angular_change:.6f}, delta_time_days={delta_time_days:.6f}")
 
     def calculate_velocity(self):
         # Wielka i mała półoś
@@ -127,7 +127,7 @@ class Planet:
 
         # Przybliżona długość orbity
         orbit_length = 2 * math.pi * math.sqrt((a ** 2 + b ** 2) / 2)
-        print("orbit: ",orbit_length)
+        #print("orbit: ",orbit_length)
 
         # Średnia prędkość orbitalna (długość orbity / czas obiegu w dniach)
         # Prędkość zwrócona jest w jednostkach symulacyjnych na dzień
@@ -166,11 +166,11 @@ class Planet:
             glScalef(self.size, self.size, self.size)
 
             if self.light_transparent:
-                # Ustaw planetę jako źródło światła (GL_LIGHT1)
-                light_position = [1.0, 1.0, 1.0, 0.0]  # W punkcie sceny (Słońce)
-                light_diffuse = [1.0, 1.0, 1.0, 1.0]  # Bardzo jasne światło
-                light_specular = [1.0, 1.0, 1.0, 1.0]  # Jasne odbicie specularne
-                light_ambient = [0.3, 0.3, 0.3, 1.0]  # Subtelne światło otoczenia
+                # Ustaw planetę jako źródło światła (GL_LIGHT0)
+                light_position = [0.0, 0.0, 0.0, 1.0]  # W punkcie sceny (Słońce)
+                light_diffuse = [1.5, 1.5, 1.2, 1.0]  # Bardzo jasne światło
+                light_specular = [1.2, 1.2, 1.2, 1.0]  # Jasne odbicie specularne
+                light_ambient = [0.1, 0.1, 0.1, 1.0]  # Subtelne światło otoczenia
 
                 glEnable(GL_LIGHTING)
                 glEnable(GL_LIGHT0)  # Słońce jako GL_LIGHT0
@@ -206,7 +206,7 @@ class Planet:
 
             # Debugowanie prędkości
             velocity = self.calculate_velocity()
-            print(f"Prędkość planety ({self.texture_name}): {velocity:.2f} km/s")
+            #print(f"Prędkość planety ({self.texture_name}): {velocity:.2f} km/s")
 
         except Exception as e:
             print(f"Error during rendering: {e}")

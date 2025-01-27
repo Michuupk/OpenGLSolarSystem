@@ -48,7 +48,7 @@ mouse_y_pos_old = 0
 mouse_z_pos_old = 0
 delta_x = 0
 delta_y = 0
-cam_radius = 0.0
+cam_radius = 20.0
 camera_position = [1.0, 0.0, 0.0]
 upv = [0.0, 1.0, 0.0]
 
@@ -71,6 +71,9 @@ def startup():
     update_viewport(None, 1000, 1000)
 
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_COLOR_MATERIAL)
+    glEnable(GL_CULL_FACE)
+    glFrontFace(GL_CCW)
     glShadeModel(GL_SMOOTH)
 
     glEnable(GL_TEXTURE_2D)
@@ -79,6 +82,8 @@ def startup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT)
+
+
 
 def axes():
     glBegin(GL_LINES)
@@ -125,14 +130,17 @@ def mouse_button_callback(window, button, action, mods):
     else:
         right_mouse_button_pressed = 0
 
+def keyboard_key_callback(window, keyboard):
+    pass
+
 def scroll_callback(window, xoffset, yoffset):
     global cam_radius
-    if -45 <= cam_radius <= 45:
+    if -195 <= cam_radius <= 195:
         cam_radius -= yoffset
-    if cam_radius < -45:
-        cam_radius = -45
-    if cam_radius > 45:
-        cam_radius = 45
+    if cam_radius < -195:
+        cam_radius = -195
+    if cam_radius > 195:
+        cam_radius = 195
 
 def render(time):
     global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
@@ -166,6 +174,7 @@ def render(time):
     glutInit()
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
+
 
     axes()
 
@@ -237,7 +246,6 @@ def main():
     startup()
 
     while not glfwWindowShouldClose(window):
-
         render(glfwGetTime())
         glfwSwapBuffers(window)
         glfwPollEvents()
