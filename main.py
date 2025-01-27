@@ -119,7 +119,7 @@ def mouse_button_callback(window, button, action, mods):
         mouse_x_pos_old, mouse_y_pos_old = glfwGetCursorPos(window)
     else:
         left_mouse_button_pressed = 0
-                       
+
     if button == GLFW_MOUSE_BUTTON_RIGHT and action == GLFW_PRESS:
         right_mouse_button_pressed = 1
     else:
@@ -153,7 +153,7 @@ def render(time):
         upv[0] /= up_length/2
         upv[1] /= up_length/2
         upv[2] /= up_length/2
-        
+
     else:
         cam_radius = cam_radius
         upv[0] = upv[0]
@@ -163,9 +163,10 @@ def render(time):
         camera_position[1] = camera_position[1]
         camera_position[2] = camera_position[2]
 
+    glutInit()
     glLoadIdentity()
     gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
-    
+
     axes()
 
 
@@ -175,8 +176,7 @@ def render(time):
         planet.draw_orbit()
         planet.render()
 
-
-
+    glfwSwapBuffers(glfwGetCurrentContext())
     glFlush()
 
 def update_viewport(window, width, height):
@@ -204,6 +204,10 @@ def main():
         glfwTerminate()
         sys.exit(-1)
 
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
+    glutCreateWindow(b"GLUT Solar System")
+
     glfwMakeContextCurrent(window)
     # glfwSetFramebufferSizeCallback(window, update_viewport)
     # glfwSetKeyCallback(window, keyboard_key_callback)
@@ -216,8 +220,7 @@ def main():
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, minimal_ambient)
 
     glfwSwapInterval(1)
-    
-    glutInit(sys.argv)
+
 
     planets = [
         Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1, TIME_SCALE, True),
@@ -243,4 +246,5 @@ def main():
     glfwTerminate()
 
 if __name__ == '__main__':
+
     main()
