@@ -5,7 +5,6 @@ from PIL import Image
 from pathlib import Path
 
 
-
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -159,11 +158,10 @@ class Planet:
         return r
 
     def render(self):
-        """Render the planet with its current properties."""
         glPushMatrix()
 
         try:
-            # Oblicz pozycję planety na orbicie
+            # Oblicz pozycję na elipsie
             theta = math.radians(self.orbit_angle)
             a = self.orbit_radius
             b = a * math.sqrt(1 - self.eccentricity ** 2)
@@ -174,62 +172,68 @@ class Planet:
             glTranslatef(x, 0.0, z)
 
             # Rotacja planety
-            glRotatef(self.tilt_angle, 1.0, 0.0, 0.0)  # Nachylenie osi
-            glRotatef(self.angle, 0.0, 1.0, 0.0)  # Obrót wokół własnej osi
+            glRotatef(self.tilt_angle, 1.0, 0.0, 0.0)
+            glRotatef(self.angle, 0.0, 1.0, 0.0)
             glColor3f(1.0, 1.0, 1.0)
 
-            # Skalowanie planety
             glScalef(self.size, self.size, self.size)
 
-            # Obsługa tekstur
-            if self.texture_id and glIsTexture(self.texture_id):
-                glEnable(GL_TEXTURE_2D)
-                glBindTexture(GL_TEXTURE_2D, self.texture_id)
-
-            # Ustawienia materiału
             if self.light_transparent:
-                # Konfiguracja światła dla słońca
-                light_position = [0.0, 0.0, 0.0, 1.0]
-                light_diffuse = [1.5, 1.5, 1.2, 1.0]
-                light_specular = [1.2, 1.2, 1.2, 1.0]
-                light_ambient = [0.1, 0.1, 0.1, 1.0]
+                # Ustaw planetę jako źródło światła (GL_LIGHT0)
+                light_position = [0.0, 0.0, 0.0, 1.0]  # W centrum światło punktowe (w każdą stronę)
+                light_diffuse = [1.5, 1.5, 1.2, 1.0]  # Bardzo jasne światło
+                light_specular = [1.2, 1.2, 1.2, 1.0]  # Jasne odbicie specularne
+                light_ambient = [0.1, 0.1, 0.1, 1.0]  # Subtelne światło otoczenia
 
                 glEnable(GL_LIGHTING)
-                glEnable(GL_LIGHT0)
+                glEnable(GL_LIGHT0)  # Słońce jako GL_LIGHT0
                 glLightfv(GL_LIGHT0, GL_POSITION, light_position)
                 glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
                 glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
                 glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
-            else:
-                # Ustawienia materiału dla planety
-                diffuse_reflection = [1.0, 1.0, 1.0, 1.0]
-                specular_reflection = [0.3, 0.3, 0.3, 1.0]
-                ambient_reflection = [0.2, 0.2, 0.2, 1.0]
-                shininess = 50.0
 
+            else:
+
+
+                diffuse_reflection = [1.0, 1.0, 1.0, 1.0]  # Maksymalne odbicie dyfuzyjne (biały kolor)
+                specular_reflection = [1.0, 1.0, 1.0, 1.0]  # Maksymalne odbicie specularne (biały kolor)
+                ambient_reflection = [0, 0, 0, 0]  # Maksymalne światło otoczenia (biały kolor)
+                shininess = 128.0  # Wysoki połysk (wartość maksymalna)
+
+                # Zastosowanie do materiału
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse_reflection)
                 glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular_reflection)
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient_reflection)
                 glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
-            # Rysowanie kuli
+
+            # Teksturowanie i rysowanie
+            if self.texture_id and glIsTexture(self.texture_id):
+                glEnable(GL_TEXTURE_2D)
+                glBindTexture(GL_TEXTURE_2D, self.texture_id)
+
+            if self.day_length == 0:
+                glMaterialfv(GL_FRONT, GL_EMISSION, [1.0, 1.0, 0.0, 1.0]) # Jasnożółta emisja słońca
             quadric = gluNewQuadric()
             gluQuadricNormals(quadric, GLU_SMOOTH)
             gluQuadricTexture(quadric, GL_TRUE)
             gluSphere(quadric, 1.0, self.N, self.N)
             gluDeleteQuadric(quadric)
+            if self.day_length == 0:
+                glMaterialfv(GL_FRONT, GL_EMISSION, [0.0, 0.0, 0.0, 1.0])
+
+            # Debugowanie prędkości
+            velocity = self.calculate_velocity()
+            #print(f"Prędkość planety ({self.texture_name}): {velocity:.2f} km/s")
 
         except Exception as e:
             print(f"Error during rendering: {e}")
 
         finally:
-            # Wyłącz teksturę, jeśli była włączona
             if self.texture_id and glIsTexture(self.texture_id):
                 glDisable(GL_TEXTURE_2D)
 
-            # Wyłącz światło, jeśli było włączone
             if self.light_transparent:
-                glDisable(GL_LIGHTING)
-                glDisable(GL_LIGHT0)
+                glDisable(GL_BLEND)  # Wyłącz blending po renderowaniu przezroczystej planety
 
             glPopMatrix()
