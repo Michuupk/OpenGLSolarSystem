@@ -35,7 +35,7 @@ SCALE_SIZE = 1.0  # Bazowy rozmiar Ziemi
 SCALE_DISTANCE = 1.0  # Bazowa odległość Ziemi
 sun_radius = 8.0
 BASE_RADIUS = 4.0  # Odległość Merkurego
-TIME_SCALE = 526000  # Jeden rok w symulacji trwa 1 minutę
+TIME_SCALE = 131500  # Jeden rok w symulacji trwa 1 minutę
 # Słońce
 
 
@@ -63,6 +63,8 @@ def calculate_delta_time():
 
 def shutdown():
     pass
+
+
 
 def startup():
     glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -166,6 +168,7 @@ def render(time):
     
     axes()
 
+
     for planet in planets:
         planet.update_orbit(delta_time)
         planet.rotate(delta_time)
@@ -207,12 +210,16 @@ def main():
     glfwSetCursorPosCallback(window, mouse_motion_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
     glfwSetScrollCallback(window, scroll_callback)
+    glEnable(GL_COLOR_MATERIAL)
+
+    minimal_ambient = [0.0, 0.0, 0.0, 1.0]  # Brak światła otoczenia
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, minimal_ambient)
 
     glfwSwapInterval(1)
 
 
     planets = [
-        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1, TIME_SCALE),
+        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1, TIME_SCALE, True),
         Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "textures/2k_mercury.jpg", SCALE_DISTANCE, SCALE_SIZE, 0.205,58.6,88.0,TIME_SCALE),  # Merkury
         Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.5, 3.0, 0, "textures/2k_venus_surface.jpg", SCALE_DISTANCE, SCALE_SIZE,0.007,243,224.7,TIME_SCALE),  # Wenus
         Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.3, 2.5, 0, "textures/2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE,0.017,1,365.25,TIME_SCALE),  # Ziemia

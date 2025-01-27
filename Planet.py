@@ -16,7 +16,7 @@ class Planet:
     tab = np.array([])
     texture = np.zeros((N, N, 2))
 
-    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity ,day_length ,year_length, scale_global):
+    def __init__(self, radius, size, tilt_angle, orbit_radius, orbit_speed, orbit_angle, texture_name, scale_distance, scale_size, eccentricity ,day_length ,year_length, scale_global,light_transparent = False ):
         self.angle = 0
         self.size = size * scale_size
         self.radius = radius * scale_size
@@ -30,8 +30,10 @@ class Planet:
         self.day_length = day_length  # Czas obrotu planety wokół osi (dni)
         self.year_length = year_length  # Czas obiegu planety wokół Słońca (dni)
         self.scale_global = scale_global  # Globalny współczynnik skalowania
+        self.light_transparent = light_transparent
 
     def draw_orbit(self):
+
         a = self.orbit_radius  # Wielka półoś
         b = a * math.sqrt(1 - self.eccentricity ** 2)  # Mała półoś
         c = a * self.eccentricity  # Odległość środka elipsy od ogniska
@@ -163,6 +165,34 @@ class Planet:
 
             glScalef(self.size, self.size, self.size)
 
+            if self.light_transparent:
+                # Ustaw planetę jako źródło światła (GL_LIGHT1)
+                light_position = [1.0, 1.0, 1.0, 0.0]  # W punkcie sceny (Słońce)
+                light_diffuse = [1.0, 1.0, 1.0, 1.0]  # Bardzo jasne światło
+                light_specular = [1.0, 1.0, 1.0, 1.0]  # Jasne odbicie specularne
+                light_ambient = [0.3, 0.3, 0.3, 1.0]  # Subtelne światło otoczenia
+
+                glEnable(GL_LIGHTING)
+                glEnable(GL_LIGHT0)  # Słońce jako GL_LIGHT0
+                glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+                glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
+                glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+                glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+            else:
+
+
+                diffuse_reflection = [1.0, 1.0, 1.0, 1.0]  # Maksymalne odbicie dyfuzyjne (biały kolor)
+                specular_reflection = [1.0, 1.0, 1.0, 1.0]  # Maksymalne odbicie specularne (biały kolor)
+                ambient_reflection = [0, 0, 0, 0]  # Maksymalne światło otoczenia (biały kolor)
+                shininess = 128.0  # Wysoki połysk (wartość maksymalna)
+
+                # Zastosowanie do materiału
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse_reflection)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular_reflection)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient_reflection)
+                glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
+
+
             # Teksturowanie i rysowanie
             if self.texture_id and glIsTexture(self.texture_id):
                 glEnable(GL_TEXTURE_2D)
@@ -184,6 +214,9 @@ class Planet:
         finally:
             if self.texture_id and glIsTexture(self.texture_id):
                 glDisable(GL_TEXTURE_2D)
+
+            if self.light_transparent:
+                glDisable(GL_BLEND)  # Wyłącz blending po renderowaniu przezroczystej planety
 
             glPopMatrix()
             glutSwapBuffers()
