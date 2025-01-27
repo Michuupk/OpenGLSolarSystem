@@ -216,7 +216,8 @@ def main():
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, minimal_ambient)
 
     glfwSwapInterval(1)
-
+    
+    glutInit(sys.argv)
 
     planets = [
         Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1, TIME_SCALE, True),
