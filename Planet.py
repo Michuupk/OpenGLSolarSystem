@@ -32,6 +32,10 @@ class Planet:
         self.scale_global = scale_global  # Globalny współczynnik skalowania
         self.light_transparent = light_transparent
 
+    def changeTimeScaling(self, TIME_SCALE):
+        self.scale_global = TIME_SCALE
+
+
     def draw_orbit(self):
 
         a = self.orbit_radius  # Wielka półoś
@@ -40,6 +44,16 @@ class Planet:
         segments = 100  # Liczba segmentów, które przybliżą elipsę
 
         glColor3f(0.5, 0.5, 0.5)  # Kolor orbity (szary)
+        # Ustawienie materiału, aby obiekt nie reagował na światło
+        no_light_material = [0.0, 0.0, 0.0, 1.0]  # Brak odbicia światła
+
+        # Wyłącz komponenty materiału dla tego obiektu
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, no_light_material)  # Brak odbicia rozproszonego
+        glMaterialfv(GL_FRONT, GL_SPECULAR, no_light_material)  # Brak odbicia specularnego
+        glMaterialfv(GL_FRONT, GL_AMBIENT, no_light_material)  # Brak odbicia specularnego
+        glMaterialfv(GL_FRONT, GL_EMISSION, no_light_material)
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0)
+
         glBegin(GL_LINE_LOOP)  # Rozpocznij rysowanie linii
 
         for i in range(segments):
@@ -167,7 +181,7 @@ class Planet:
 
             if self.light_transparent:
                 # Ustaw planetę jako źródło światła (GL_LIGHT0)
-                light_position = [0.0, 0.0, 0.0, 1.0]  # W punkcie sceny (Słońce)
+                light_position = [0.0, 0.0, 0.0, 1.0]  # W centrum światło punktowe (w każdą stronę)
                 light_diffuse = [1.5, 1.5, 1.2, 1.0]  # Bardzo jasne światło
                 light_specular = [1.2, 1.2, 1.2, 1.0]  # Jasne odbicie specularne
                 light_ambient = [0.1, 0.1, 0.1, 1.0]  # Subtelne światło otoczenia
@@ -178,6 +192,7 @@ class Planet:
                 glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
                 glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
                 glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+
             else:
 
 
@@ -198,11 +213,15 @@ class Planet:
                 glEnable(GL_TEXTURE_2D)
                 glBindTexture(GL_TEXTURE_2D, self.texture_id)
 
+            if self.day_length == 0:
+                glMaterialfv(GL_FRONT, GL_EMISSION, [1.0, 1.0, 0.0, 1.0]) # Jasnożółta emisja słońca
             quadric = gluNewQuadric()
             gluQuadricNormals(quadric, GLU_SMOOTH)
             gluQuadricTexture(quadric, GL_TRUE)
             gluSphere(quadric, 1.0, self.N, self.N)
             gluDeleteQuadric(quadric)
+            if self.day_length == 0:
+                glMaterialfv(GL_FRONT, GL_EMISSION, [0.0, 0.0, 0.0, 1.0])
 
             # Debugowanie prędkości
             velocity = self.calculate_velocity()

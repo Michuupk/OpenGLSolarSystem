@@ -28,6 +28,8 @@ current_z = 0.0
 next_x = 0.0
 next_y = 0.0
 next_z = 0.0
+movement_speed = 2.0
+rotation_speed = 2.0
 
 planets = []
 
@@ -35,7 +37,7 @@ SCALE_SIZE = 1.0  # Bazowy rozmiar Ziemi
 SCALE_DISTANCE = 1.0  # Bazowa odległość Ziemi
 sun_radius = 8.0
 BASE_RADIUS = 4.0  # Odległość Merkurego
-TIME_SCALE = 131500  # Jeden rok w symulacji trwa 1 minutę
+TIME_SCALE = 525600  # Jeden rok w symulacji trwa 1 minutę
 # Słońce
 
 
@@ -49,7 +51,8 @@ mouse_z_pos_old = 0
 delta_x = 0
 delta_y = 0
 cam_radius = 20.0
-camera_position = [1.0, 0.0, 0.0]
+camera_position = np.array([0.0, 0.0, 50.0])
+camera_angle = np.array([0.0, 0.0])
 upv = [0.0, 1.0, 0.0]
 
 last_time = time.time()
@@ -130,8 +133,43 @@ def mouse_button_callback(window, button, action, mods):
     else:
         right_mouse_button_pressed = 0
 
-def keyboard_key_callback(window, keyboard):
-    pass
+def keyboard_key_callback(window, key, scancode, action, mods):
+    global camera_position, camera_angle, movement_speed, TIME_SCALE
+    if action == GLFW_PRESS or action == GLFW_REPEAT:
+        pass
+    if key == GLFW_KEY_W:
+        camera_position[2] -= movement_speed
+    elif key == GLFW_KEY_S:
+        camera_position[2] += movement_speed
+    elif key == GLFW_KEY_A:
+        camera_position[0] -= movement_speed
+    elif key == GLFW_KEY_D:
+        camera_position[0] += movement_speed
+    elif key == GLFW_KEY_R:
+        camera_position[1] += movement_speed
+    elif key == GLFW_KEY_F:
+        camera_position[1] -= movement_speed
+    elif key == GLFW_KEY_UP:
+        camera_angle[1] += rotation_speed
+    elif key == GLFW_KEY_DOWN:
+        camera_angle[1] -= rotation_speed
+    elif key == GLFW_KEY_LEFT:
+        camera_angle[0] -= rotation_speed
+    elif key == GLFW_KEY_RIGHT:
+        camera_angle[0] += rotation_speed
+    elif key == GLFW_KEY_0: #real time
+        TIME_SCALE = 1
+    elif key == GLFW_KEY_1: #base time
+        TIME_SCALE = 525600
+    elif key == GLFW_KEY_2: #accelerate
+        TIME_SCALE += (525600/2)
+    elif key == GLFW_KEY_3: #decelerate
+        TIME_SCALE -= (525600/2)
+    elif key == GLFW_KEY_4: #accelerate*2
+        TIME_SCALE *= 2
+    elif key == GLFW_KEY_5: #accelerate/2
+        TIME_SCALE /= 2
+
 
 def scroll_callback(window, xoffset, yoffset):
     global cam_radius
@@ -143,39 +181,14 @@ def scroll_callback(window, xoffset, yoffset):
         cam_radius = 195
 
 def render(time):
-    global delta_x, delta_y, cam_radius, camera_position, upv, center, radius
+    global delta_x, delta_y, cam_radius, camera_position, upv, center, radius, camera_position
     delta_time = calculate_delta_time()  # Compute time elapsed since the last frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+    target = np.array([camera_position[0] + np.sin(np.radians(camera_angle[0])),camera_position[1] + np.sin(np.radians(camera_angle[1])),camera_position[2] - np.cos(np.radians(camera_angle[0]))])
 
-    if left_mouse_button_pressed:
-        camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
-        camera_position[1] = math.sin(delta_y)
-        camera_position[2] = math.cos(delta_y) * math.sin(delta_x)
-
-        upv[0] = -math.cos(delta_x) * math.sin(delta_y)
-        upv[1] = math.cos(delta_y)
-        upv[2] = -math.sin(delta_x) * math.sin(delta_y)
-
-        up_length = math.sqrt(upv[0]**2 + upv[1]**2 + upv[2]**2)
-        upv[0] /= up_length/2
-        upv[1] /= up_length/2
-        upv[2] /= up_length/2
-
-    else:
-        cam_radius = cam_radius
-        upv[0] = upv[0]
-        upv[1] = upv[1]
-        upv[2] = upv[2]
-        camera_position[0] = camera_position[0]
-        camera_position[1] = camera_position[1]
-        camera_position[2] = camera_position[2]
-
-    glutInit()
     glLoadIdentity()
-    gluLookAt(camera_position[0] * cam_radius,camera_position[1] * cam_radius,camera_position[2] * cam_radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
-
-
+    gluLookAt(camera_position[0], camera_position[1], camera_position[2],target[0], target[1], target[2],0.0, 1.0, 0.0)
     axes()
 
 
@@ -183,6 +196,7 @@ def render(time):
         planet.update_orbit(delta_time)
         planet.rotate(delta_time)
         planet.draw_orbit()
+        planet.changeTimeScaling(TIME_SCALE)
         planet.render()
 
     glfwSwapBuffers(glfwGetCurrentContext())
@@ -192,7 +206,7 @@ def update_viewport(window, width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    gluPerspective(70, 1.0, 0.1, 300.0)
+    gluPerspective(70, 1.0, 0.01, 3000.0)
 
     if width <= height:
         glViewport(0, int((height - width) / 2), width, width)
@@ -204,7 +218,18 @@ def update_viewport(window, width, height):
 
 
 def main():
-    global planets
+    global planets, TIME_SCALE
+
+    print("Zmiana pozycji przy pomocy WSAD, zaś w górę i w dół przy pomocy RF")
+    print("Zmiana kąta patrzenia przy pomocy strzałek")
+    print("")
+    print("Czas rzeczywisty obrotu - 0")
+    print("Czas roku ziemskiego w minutę - 1")
+    print("Przyspieszenie liniowe - 2")
+    print("Opóźnienie liniowe - 3")
+    print("Większe przyśpieszenie - 4")
+    print("Większe opóźnienie - 5")
+
     if not glfwInit():
         sys.exit(-1)
 
@@ -219,7 +244,7 @@ def main():
 
     glfwMakeContextCurrent(window)
     # glfwSetFramebufferSizeCallback(window, update_viewport)
-    # glfwSetKeyCallback(window, keyboard_key_callback)
+    glfwSetKeyCallback(window, keyboard_key_callback)
     glfwSetCursorPosCallback(window, mouse_motion_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
     glfwSetScrollCallback(window, scroll_callback)
@@ -232,7 +257,7 @@ def main():
 
 
     planets = [
-        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,27,1, TIME_SCALE, True),
+        Planet(sun_radius, 8.0, 0, 0, 0, 0, "textures/2k_sun.jpg", SCALE_DISTANCE, SCALE_SIZE,0.0,0,1, TIME_SCALE, True),
         Planet(sun_radius + 0.4, 0.4, 0.0, sun_radius + 4.0, 5.0, 0, "textures/2k_mercury.jpg", SCALE_DISTANCE, SCALE_SIZE, 0.205,58.6,88.0,TIME_SCALE),  # Merkury
         Planet(sun_radius + 0.9, 0.9, 177.4, sun_radius + 7.5, 3.0, 0, "textures/2k_venus_surface.jpg", SCALE_DISTANCE, SCALE_SIZE,0.007,243,224.7,TIME_SCALE),  # Wenus
         Planet(sun_radius + 1.0, 1.0, 23.5, sun_radius + 10.3, 2.5, 0, "textures/2k_earth_daymap.jpg", SCALE_DISTANCE, SCALE_SIZE,0.017,1,365.25,TIME_SCALE),  # Ziemia
