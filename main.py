@@ -116,6 +116,14 @@ def keyboard_key_callback(key, x, y):
         camera_position[1] += movement_speed
     elif key == b'f':
         camera_position[1] -= movement_speed
+    elif key == b'k':
+        camera_angle[1] -= rotation_speed
+    elif key == b'i':
+        camera_angle[1] += rotation_speed
+    elif key == b'l':
+        camera_angle[0] += rotation_speed
+    elif key == b'j':
+        camera_angle[0] -= rotation_speed
     elif key == b'\033':  # ESC key
         sys.exit(0)
     elif key == b'0':  # real time
@@ -176,7 +184,7 @@ def main():
     global planets, TIME_SCALE
 
     print("Zmiana pozycji przy pomocy WSAD, zaś w górę i w dół przy pomocy RF")
-    print("Zmiana kąta patrzenia przy pomocy strzałek")
+    print("Zmiana kąta patrzenia przy pomocy ikjl")
     print("")
 
     glutInit(sys.argv)
